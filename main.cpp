@@ -8,7 +8,7 @@ using namespace cv;
 
 void button(WORD key);
 
-void moveMouse(int x, int y, int button, DWORD sleep=0);
+void moveMouse(int x, int y, int button, DWORD sleep=0, bool move=false);
 
 Mat screenBitmap(int x, int y, int w, int h);
 
@@ -56,8 +56,8 @@ int main() {
     Sleep(3000);
     int loop = 0;
     Mat img;
-    while(loop != 1){
-        /*img = screenBitmap(0, 0, 1920, 1080);
+    while(loop != 2){
+        img = screenBitmap(0, 0, 1920, 1080);
         while(templateMatching(img, imread("Assets/Ingame.bmp"), false)){
             Sleep(300);
             img = screenBitmap(0, 0, 1920, 1080);
@@ -87,7 +87,7 @@ int main() {
 
         // Salvage
         //Mat img = screenBitmap(0, 0, 1920, 1080);
-        if (loop%2 == 0){
+        /*if (loop%2 == 0){
             templateMatching(img, imread("Assets/Salvage/Salvage.bmp"), true);
             img = screenBitmap(0, 0, 1920, 1080);
             //imwrite("Assets/Salvage/InSalvage.bmp", screenBitmap(0, 0, 520, 150));
@@ -129,65 +129,57 @@ int main() {
         }
         moveMouse(500, 140, 1, 200);
         button(VK_ESCAPE);
-        moveMouse(860, 666, 0, 1000);
-        moveMouse(860, 666, 1, 2000);
+        moveMouse(860, 666, 0, 500, true);
         img = screenBitmap(0, 0, 1920, 1080);
         while(templateMatching(img, screenBitmap(0, 0, 1920, 1080), false))
             Sleep(500);
 
         // First room
-        moveMouse(0, 1000, 1, 500);
-        int x =0;
-        while(!templateMatching(screenBitmap(1577, 45, 320, 320), screenBitmap(1557, 65, 280, 280), false) && x != 3){
-            Sleep(4000);
-            x++;
-        }
-
-        moveMouse(115, 110, 0, 4000);
-        /*moveMouse(860, 340, 0, 500);
-        moveMouse(860, 340, 1, 700);
+        moveMouse(0, 1000, 1, 3000);
+        moveMouse(115, 110, 1, 4000);
+        moveMouse(860, 340, 0, 500, true);
         button(VK_ESCAPE);
-        moveMouse(1000, 0, 0, 1000);
-        moveMouse(1000, 0, 1, 4000);
-        moveMouse(1500, 70, 1, 4000);
-        moveMouse(1920, 700, 1, 4000);
-        moveMouse(1080, 400, 0, 1000);
-        moveMouse(1080, 400, 1, 1000);
-        moveMouse(1080, 400, 1);
+        moveMouse(1000, 0, 0, 500, true);
+        moveMouse(1500, 70, 1, 3000);
+        moveMouse(1900, 700, 1, 3000);
+        moveMouse(1100, 400, 0, 500, true);
+        moveMouse(1100, 400, 1);
         img = screenBitmap(0, 0, 1920, 1080);
         while(templateMatching(img, screenBitmap(0, 0, 1920, 1080), false))
             Sleep(500);
 
         // Second room
-        moveMouse(800, 300, 0, 1000);
-        moveMouse(800, 300, 1, 2000);
-        moveMouse(850, 480, 0, 1000);
-        Point offset;
-        if(templateMatching(screenBitmap(780, 440, 155, 20), imread("Assets/Drop.bmp"), false)){
-            moveMouse(840, 480, 1);
-        }
-        else{
-            moveMouse(780, 420, 0, 300);
-            moveMouse(780, 420, 1);
-            offset.y = 100;
-            offset.x = 80;
-            cout << "hello" << endl;
-        }
-        moveMouse(1350 + offset.x, 650 + offset.y, 0, 500);
-        moveMouse(1350 + offset.x, 650 + offset.y, 1, 1500);
-        moveMouse(1000, 720, 0, 500);
-        if(!templateMatching(screenBitmap(950, 600, 155, 100), imread("Assets/Drop.bmp"), false)){
-            moveMouse(1000, 580, 0, 500);
-            moveMouse(1000, 580, 1);
-        }
-        else{
-            moveMouse(1000, 720, 1);
-            cout << "hello" << endl;
-        }
-        moveMouse(0, 575, 0, 1000);
-        moveMouse(0, 575, 1, 2500);
-        moveMouse(880, 575, 0, 500);
-        moveMouse(880, 575, 1, 500);
+        moveMouse(800, 300, 0, 500, true);
+        moveMouse(1350, 650, 0, 500, true);
+        moveMouse(0, 575, 0, 500, true);
+        moveMouse(500, 600, 0, 500, true);
+        moveMouse(700, 870, 1, 2000);
+
+        // Hallway
+        moveMouse(240, 710, 0, 500, true);
+        moveMouse(530, 635, 0, 500, true);
+        moveMouse(700, 700, 0, 500, true);
+        moveMouse(850, 400, 0, 500, true);
+        moveMouse(0, 470, 1, 3500);
+        moveMouse(940, 400, 0, 500, true);
+        moveMouse(600, 400, 0, 500, true);
+        moveMouse(600, 400, 1, 2000);
+        moveMouse(970, 0, 1, 2000);
+        moveMouse(870, 200, 0, 500, true);
+        moveMouse(600, 200, 1, 6000);
+
+        // Torture and Grand Room
+        moveMouse(900, 400, 0, 500, true);
+        button(VK_ESCAPE);
+        Sleep(7000);
+        moveMouse(1600, 0, 1, 4000);
+        moveMouse(1100, 80, 0, 500, true);
+        moveMouse(1675, 745, 0, 500, true);
+        moveMouse(850, 0, 1, 3000);
+        moveMouse(850, 380, 0, 500, true);
+        moveMouse(1100, 450, 0, 500, true);
+        moveMouse(1750, 900, 0, 500, true);
+        moveMouse(1260, 680, 0, 500, true);
 
         // Quiting session
         button(VK_ESCAPE);
@@ -195,7 +187,7 @@ int main() {
         img = screenBitmap(0, 0, 1920, 1080);
         //imwrite("Assets/EndGame.bmp", screenBitmap(90, 450, 280, 70));
         templateMatching(img, imread("Assets/EndGame.bmp"), true);
-        Sleep(12000);*/
+        Sleep(12000);
         loop++;
     }
 
@@ -217,7 +209,7 @@ void button(WORD key){
     return;
 }
 
-void moveMouse(int x, int y, int button, DWORD sleep){
+void moveMouse(int x, int y, int button, DWORD sleep, bool move){
     INPUT input;
 
     input.type = INPUT_MOUSE;
@@ -235,6 +227,12 @@ void moveMouse(int x, int y, int button, DWORD sleep){
 
     SendInput(1, &input, sizeof(input));
     Sleep(sleep);
+    if (move){
+        input.mi.dwFlags = input.mi.dwFlags | MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP;
+        SendInput(1, &input, sizeof(input));
+        Sleep(4000);
+    }
+
     return;
 }
 
@@ -300,10 +298,9 @@ bool templateMatching(Mat img, Mat templ, bool move, DWORD sleep){
 
     cout << minVal << endl;
 
-    if (move && minVal < 2090000){
+    if (move && minVal < 1000000){
         cout << matchLoc.x << endl << matchLoc.y << endl;
-        moveMouse(matchLoc.x + 30, matchLoc.y + 30, 0, 500);
-        moveMouse(matchLoc.x + 30, matchLoc.y + 30, 1, sleep);
+        moveMouse(matchLoc.x + 30, matchLoc.y + 30, 0, 500, move);
     }
 
     return minVal < 1000000;
