@@ -2,7 +2,7 @@
 White Runner is a bot that collects grey items from the templar side story quest. It then salvages these grey items giving the player grey materials for use in crafting, enchanting, or upgrading items.
 
 # Status (07/11/2017)
-The bot is now able to loop through the entire quest clicking on all armor and weapon racks. Here is a demo of the current bot in action <https://youtu.be/dVl1FAZkDK4>. I will be adding loot picks after this.
+The bot is now able to loop through the entire quest clicking on all armor and weapon racks. Here is a demo of the current bot in action <https://youtu.be/dVl1FAZkDK4>. It is not shown in the video but the bot can make multiple loops through the quest as well. I will be adding loot picks after this.
 
 # Usage
 Simply be in the home menu when you start the bot, it will take care of the rest from there.
