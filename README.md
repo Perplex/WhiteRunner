@@ -9,9 +9,7 @@ alt="IMAGE ALT TEXT HERE" width="240" height="180" border="10" /></a>
 
 (For reference here is the previouse video: <https://youtu.be/dVl1FAZkDK4>)
 
-The next step for this bot is navigation to targets and improving the image processing side.
-
-As the bot is now using memory reading I would like to emphasizes the [disclaimer](https://github.com/Per-Plex/WhiteRunner#disclaimer) at the bottom of this README.
+The next step for this bot is navigation to targets and improving the image processing side.As the bot is now using memory reading I would like to emphasizes the [disclaimer](https://github.com/Per-Plex/WhiteRunner#disclaimer) at the bottom of this README.
 
 # Usage
 Simply be in the home menu when you start the bot, it will take care of the rest from there.
