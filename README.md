@@ -3,8 +3,8 @@ White Runner is a bot that collects grey/white items from the templar side story
 
 # Status (09/15/2017)
 White Runner now has movement and collision detection. You can see in the video below how it handles colliding with walls, chairs, and other objects. Here is an upto date video of the bot. 
-<a href="http://www.youtube.com/watch?feature=player_embedded&v=Wsy5g44H9FUc
-" target="_blank"><img src="http://img.youtube.com/vi/Wsy5g44H9FUc/0.jpg" 
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=Wsy5g44H9FU
+" target="_blank"><img src="http://img.youtube.com/vi/Wsy5g44H9FU/0.jpg" 
 alt="IMAGE ALT TEXT HERE" width="240" height="180" border="10" /></a>
 
 (For reference here is the previouse video: <https://youtu.be/YejSuaRm38c>)
