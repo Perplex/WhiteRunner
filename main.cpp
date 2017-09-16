@@ -16,37 +16,56 @@ void leaveGame();
 
 double templateMatching(Mat img, Mat templ, bool object, DWORD sleep=0, double maximum=1000000);
 
-KeyPoint featureMatching(Mat templ);
+pair<float, float> featureMatching(const Mat &templ);
 
 Mat screenBitmap(int x, int y, int w, int h);
 
 class Vector3{
 public:
-    float X;
-    float Y;
-    float Z;
+    float X=0;
+    float Y=0;
+    float Z=0;
+
+    bool operator==(const Vector3& vec){
+        return (this->X == vec.X) && (this->Y == vec.Y) && (this->Z == vec.Z);
+    }
+
+    bool operator!=(const Vector3& vec){
+        return ((this->X - vec.X)*(this->X - vec.X) + (this->Y - vec.Y)*(this->Y - vec.Y) + (this->Z - vec.Z)*(this->Z - vec.Z)) > 15*15;
+    }
+
+    friend ostream& operator<<(ostream& os, const Vector3& vec){
+        os << vec.X << ", " << vec.Y << ", " << vec.Z;
+    }
 };
 
 class DiabloProc{
 public:
     HANDLE proc = getHandle();
     long ObjectManger = 0x2146A80;
-    long ACDManger = 0x940;
-    long ActorCommonData = 0x0;
-    long Items = 0x120;
-    long FirstACD = 0x0;
-    long ACDLocation = 0x114;
-    long ActorType = 0x17c;
-    long ACDPosition = 0xD0;
+    int ACDManger = 0x940;
+    int ActorCommonData = 0x0;
+    int Items = 0x120;
+    int FirstACD = 0x0;
+    int ACDLocation = 0x114;
+    int ActorType = 0x17c;
+    int ACDPosition = 0xD0;
+    int GizmoType = 0x178;
+    int MaxIndex = 0x108;
+    int FastAttrib = 0x934;
+    int FastAttributeGroup = 0x54;
+    int collisionFlags = 0x240;
+    int FastAttribGroupID = 0x120;
+    int ChestOpen = 461;
+    vector<long> chests;
 
     pair<long, long> getACDs(){
         pair<long, long> ACDMangerPtr;
         if (proc != nullptr) {
-            long address, name;
-            int buff;
+            long address;
+            int buff =0;
 
             ReadProcessMemory(proc, (LPCVOID) ObjectManger, &buff, 4, nullptr);
-            //cout << "ObjectManger: 0x" << hex << buff << endl;
 
             // ACDManger
             address = buff + ACDManger;
@@ -55,31 +74,19 @@ public:
             // Pointer to ActorCommonData
             address = buff + ActorCommonData;
             ReadProcessMemory(proc, (LPCVOID) address, &buff, 4, nullptr);
-            //cout << "Pointer: 0x" << hex << buff << endl;
+            address = buff;
+
+            //Gets max index
+            address = address + MaxIndex;
+            ReadProcessMemory(proc, (LPCVOID) address, &ACDMangerPtr.second, 4, nullptr);
 
             //ActorCommonData
-            address = buff;
-            /*ReadProcessMemory(proc, (LPCVOID) address, &name, 8, nullptr);
-            convertHex(name);
-            ReadProcessMemory(proc, (LPCVOID) (address + 0x8), &name, 8, nullptr);
-            convertHex(name);
-            cout << endl << endl;*/
-
-            address += Items;
-            int max;
-            //cout << "0x" << hex << address << endl;
+            address += Items - MaxIndex;
             ReadProcessMemory(proc, (LPCVOID) address, &buff, 4, nullptr);
-            //cout << "0x" << hex << buff << endl;
 
-            address = (address - Items) + 0x108;
-            ReadProcessMemory(proc, (LPCVOID) address, &max, 4, nullptr);
-            //cout << "Max: 0x" << hex << max << endl;
-
+            //Gets ptr to first ACD
             address = buff + FirstACD;
-            ReadProcessMemory(proc, (LPCVOID) address, &buff, 4, nullptr);
-            //cout << "First: 0x" << hex << buff << endl << endl;
-            ACDMangerPtr.first = buff;
-            ACDMangerPtr.second = max;
+            ReadProcessMemory(proc, (LPCVOID) address, &ACDMangerPtr.first, 4, nullptr);
         }
         return  ACDMangerPtr;
     }
@@ -91,8 +98,6 @@ public:
         double xd = position.X - charPos.X;
         double yd = position.Y - charPos.Y;
         double zd = position.Z - charPos.Z;
-
-        printf("xd: %f\nyd: %f\nzd: %f\n\n", xd, yd, zd);
 
         double w = -0.515 * xd + -0.514 * yd + -0.686 * zd + 97.985;
         double X = (-1.182 * xd + 1.283 * yd + 0 * zd + 7.045e-3) / w;
@@ -117,30 +122,21 @@ public:
         if (proc != nullptr){
             pair<long, long> ACDManger = getACDs();
             long address = ACDManger.first;
-            long name;
             bool found = false;
-            //Looping through ACDs
 
+            //Looping through ACDs
             for (int x = 0; x <= ACDManger.second && !found; address += 0x2f0, x++) {
-                int ID;
-                int actorType;
-                int location;
+                int ID =0;
+                int actorType=0;
+                int location=0;
 
                 ReadProcessMemory(proc, (LPCVOID) (address), &ID, 1, nullptr);
                 ReadProcessMemory(proc, (LPCVOID) (address + ACDLocation), &location, 1, nullptr);
-                ReadProcessMemory(proc, (LPCVOID) (address + ActorType), &actorType, 4, nullptr);
+                ReadProcessMemory(proc, (LPCVOID) (address + ActorType), &actorType, 1, nullptr);
 
                 if (ID != 0xff && location == 0xff && actorType == 8) {
-                    ReadProcessMemory(proc, (LPCVOID) (address + 0x4), &name, 8, nullptr);
-                    //cout << "Name: ";
-                    //convertHex(name);
-                    //cout << endl;
-                    ReadProcessMemory(proc, (LPCVOID) (address + ACDPosition), &position.X, 4, nullptr);
-                    ReadProcessMemory(proc, (LPCVOID) (address + ACDPosition + 0x4), &position.Y, 4, nullptr);
-                    ReadProcessMemory(proc, (LPCVOID) (address + ACDPosition + 0x8), &position.Z, 4, nullptr);
-                    //printf("PositionX: %f\nPositionY: %f\nPositionZ: %f\n\n", position.X, position.Y, position.Z);
-                    if (position.X != 0 && position.Y != 0 && position.Z != 0)
-                        found = true;
+                    position = readPosition(address);
+                    found = true;
                 }
             }
         }
@@ -152,7 +148,7 @@ public:
         Vector3 charPos;
         if (proc != nullptr) {
             pair<long, long> ACDManger = getACDs();
-            long address = ACDManger.first, name;
+            long address = ACDManger.first;
             bool found = false;
 
             for(int x=0; x <= ACDManger.second && !found; address+=0x2f0, x++){
@@ -161,29 +157,149 @@ public:
                 ReadProcessMemory(proc, (LPCVOID)(address), &ID, 1, nullptr);
                 ReadProcessMemory(proc, (LPCVOID)(address + ActorType), &actorType, 4, nullptr);
                 if(ID != 0xff && actorType == 7){
-
-                    ReadProcessMemory(proc, (LPCVOID)(address + 0x4), &name, 8, nullptr);
-                    //cout << "Name: ";
-                    //convertHex(name);
-                    //cout << endl;
-                    ReadProcessMemory(proc, (LPCVOID)(address + ACDPosition), &charPos.X, 4, nullptr);
-                    ReadProcessMemory(proc, (LPCVOID)(address + ACDPosition + 0x4), &charPos.Y, 4, nullptr);
-                    ReadProcessMemory(proc, (LPCVOID)(address + ACDPosition + 0x8), &charPos.Z, 4, nullptr);
+                    charPos = readPosition(address);
                     found = true;
-                    //printf("Address: %lX\nPositionX: %f\nPositionY: %f\nPositionZ: %f\n\n", address, charPos.X, charPos.Y, charPos.Z);
                 }
             }
         }
         return charPos;
     }
 
-    void convertHex(long buff) {
-        while ((buff & 0xff) != 0x00) {
-            auto temp = (char) (buff & 0xff);
-            cout << temp;
-            buff >>= 8;
+    void findChests(){
+        if (proc == nullptr)
+            return;
+
+        pair<int, int> loc = {-1, -1};
+        pair<long, long> ACDManger = getACDs();
+
+        long address = ACDManger.first;
+        //Looping through ACDs
+
+        for (int x = 0; x <= ACDManger.second; address += 0x2f0, x++) {
+            int ID =0;
+            int actorType=0;
+            int gizmoType=0;
+            int collFlags=0;
+            long groupID=0;
+            long name=0;
+
+            ReadProcessMemory(proc, (LPCVOID)(address), &ID, 1, nullptr);
+            ReadProcessMemory(proc, (LPCVOID)(address + GizmoType), &gizmoType, 1, nullptr);
+            ReadProcessMemory(proc, (LPCVOID)(address + ActorType), &actorType, 4, nullptr);
+            ReadProcessMemory(proc, (LPCVOID)(address + collisionFlags), &collFlags, 4, nullptr);
+            ReadProcessMemory(proc, (LPCVOID)(address + FastAttribGroupID), &groupID, 4, nullptr);
+
+            if (ID != 0xff && actorType == 2 && gizmoType == 1 && (collFlags&0x400) == 0 && !TryGetAttributeValue(groupID)) {
+
+                if(screenPos(readPosition(address)).second > 0){
+                    chests.push_back(address);
+                    convertHex(address);
+                }
+
+            }
         }
-        return;
+    }
+
+    void getLoot(){
+        if (proc == nullptr)
+            return;
+
+        if(chests.empty())
+            findChests();
+
+        cout << "size: " << chests.size();
+        while(!chests.empty()){
+            cout << endl << "New Loop:" << endl;
+            pair<int, int> loc, move;
+            double closest = 10000;
+            int index = -1;
+            Vector3 dest;
+
+            for (int x=0; x < chests.size(); x++){
+                loc = screenPos(readPosition(chests[x]));
+                cout << "x: " << loc.first << endl << "y: " << loc.second << endl << endl;
+                double current = sqrt((950 - loc.first) * (950 - loc.first) + (460 - loc.second) * (460 - loc.second));
+                if (current < closest){
+                    closest = current;
+                    index = x;
+                }
+            }
+
+            move = screenPos(readPosition(chests[index]));
+            Vector3 prevPos;
+            Vector3 currentPos;
+            if (move.first < 0) {
+                moveMouse(0, move.second, 1);
+                currentPos = getCharPos();
+                while(!(prevPos == currentPos)){
+                    prevPos = currentPos;
+                    Sleep(200);
+                    currentPos = getCharPos();
+                }
+                move = screenPos(readPosition(chests[index]));
+            }
+            cout << "moveX: " << move.first << endl << "moveY: " << move.second << endl;
+            moveMouse(move.first, move.second, 0, 0, true);
+
+            // Movement and Collision detection
+            currentPos = getCharPos();
+            dest = readPosition(chests[index]);
+            int stuck=0;
+            while(currentPos != dest){
+                if(currentPos == prevPos){
+                    stuck++;
+                    move = screenPos(currentPos);
+                    if (stuck < 3){
+                        moveMouse(move.first, move.second + 100, 0, 1000, true);
+
+                    }
+                    else{
+                        moveMouse(move.first - 350, move.second + 100, 0, 1000, true);
+                    }
+                    dest = readPosition(chests[index]);
+                    move = screenPos(dest);
+                    moveMouse(move.first, move.second, 0, 0, true);
+                }
+                prevPos = currentPos;
+                Sleep(200);
+                currentPos = getCharPos();
+            }
+
+            Sleep(1200);
+
+            chests.erase(chests.begin() + index);
+
+            loc = screenPos(findLoot());
+            cout << loc.first << endl << loc.second << endl;
+            if (loc.first > 0 && loc.second > 0)
+                moveMouse(loc.first, loc.second, 0, 600, true);
+
+            if (chests.empty())
+                findChests();
+        }
+
+    }
+
+    void convertHex(long address) {
+        long name = ReadProcessMemory(proc, (LPCVOID)(address + 0x4), &name, 8, nullptr);;
+        int x=0;
+        while((name & 0xff) != 0x00){
+            while ((name & 0xff) != 0x00) {
+                auto temp = (char) (name & 0xff);
+                cout << temp;
+                name >>= 8;
+            }
+            x++;
+            name = 0;
+            ReadProcessMemory(proc, (LPCVOID)(address + 0x4 + 0x8*x), &name, 8, nullptr);
+        }
+
+        cout << endl;
+    }
+
+    ~DiabloProc(){
+        cout << "\nClosing Diablo III Process Handle" << endl;
+        CloseHandle(proc);
     }
 
 private:
@@ -201,6 +317,79 @@ private:
         CloseHandle(snapshot);
         return hProcess;
     }
+
+    Vector3 readPosition(long baseAddress){
+        Vector3 position;
+
+        ReadProcessMemory(proc, (LPCVOID)(baseAddress + ACDPosition), &position.X, 4, nullptr);
+        ReadProcessMemory(proc, (LPCVOID)(baseAddress + ACDPosition + 0x4), &position.Y, 4, nullptr);
+        ReadProcessMemory(proc, (LPCVOID)(baseAddress + ACDPosition + 0x8), &position.Z, 4, nullptr);
+
+        return position;
+    }
+
+    bool TryGetAttributeValue(long groupID){
+        int key = (-1 << 12) + (ChestOpen & 0xFFF);
+
+        if (proc != nullptr) {
+            long address;
+            int buff = 0;
+
+            ReadProcessMemory(proc, (LPCVOID) ObjectManger, &buff, 4, nullptr);
+
+            // FastAttrib ptr
+            address = buff + FastAttrib;
+            ReadProcessMemory(proc, (LPCVOID) address, &buff, 4, nullptr);
+
+            // FastAttributeGroup ExpandableContainer
+            address = buff + FastAttributeGroup;
+            ReadProcessMemory(proc, (LPCVOID) address, &buff, 4, nullptr);
+            address = buff;
+
+            // FastAttrib list ptr
+            address += Items;
+            ReadProcessMemory(proc, (LPCVOID) address, &buff, 4, nullptr);
+
+            //Gets ptr to first FastAttrib
+            address = buff + FirstACD;
+            ReadProcessMemory(proc, (LPCVOID) address, &buff, 4, nullptr);
+
+            // Verifying if chest is valid
+            address = buff+0x9c8*(short)groupID;
+            ReadProcessMemory(proc, (LPCVOID) (address), &buff, 4, nullptr);
+
+            if (buff != -1){
+                int mask=0;
+                ReadProcessMemory(proc, (LPCVOID) (address+0x10), &mask, 4, nullptr);
+
+                if(mask != 0) {
+                    int count=0;
+                    ReadProcessMemory(proc, (LPCVOID)(address+0x14), &count, 4, nullptr);
+                    if (count == 0)
+                        return false;
+
+                    int hash = abs(key) -1;
+                    int index = hash & mask;
+                    long entry=0;
+                    buff =0;
+
+                    ReadProcessMemory(proc, (LPCVOID)(address+0x20), &buff, 4, nullptr);
+                    address = buff;
+
+                    ReadProcessMemory(proc, (LPCVOID)(address + index*4), &entry, 4, nullptr);
+
+                    while(entry != 0){
+                        int entryKey=0;
+                        ReadProcessMemory(proc, (LPCVOID)(entry+0x4), &entryKey, 4, nullptr);
+                        if (entryKey == key)
+                            return true;
+                        ReadProcessMemory(proc, (LPCVOID)entry, &entry, 4, nullptr);
+                    }
+                }
+            }
+        }
+        return false;
+    }
 };
 
 int main() {
@@ -210,12 +399,11 @@ int main() {
     DiabloProc D3;
 
     if (D3.proc == nullptr){
-        CloseHandle(D3.proc);
         return 0;
     }
 
     while(loop != 1){
-        KeyPoint loc;
+        pair<float, float> loc;
 
         img = screenBitmap(0, 0, 1920, 1080);
         templ = imread("Assets/Ingame.bmp");
@@ -249,7 +437,7 @@ int main() {
             cout << "=======================\n\n\tSALVAGE\n";
             cout << "\nFinding salvage:\n";
             loc = featureMatching(imread("Assets/Salvage/Salvage.bmp"));
-            moveMouse((int) loc.pt.x, (int) loc.pt.y, 0, 2000, true);
+            moveMouse((int) loc.first, (int) loc.second, 0, 2000, true);
 
             img = screenBitmap(0, 0, 1920, 1080);
             cout << "\nChecking if in salvage:\n";
@@ -321,53 +509,10 @@ int main() {
 
         // Second room
         cout << "=======================\n\n\tFINDING LOOT\n";
-        moveMouse(800, 290, 0, 3000, true);
-        pair<LONG, LONG> screenPos = D3.screenPos(D3.findLoot());
-        moveMouse(screenPos.first, screenPos.second, 0, 1000, true);
-
-        cout << "=======================\n\n\tFINDING LOOT\n";
-        moveMouse(1350, 680, 0, 3000, true);
-        screenPos = D3.screenPos(D3.findLoot());
-        moveMouse(screenPos.first, screenPos.second, 0, 1000, true);
-
-        cout << "=======================\n\n\tFINDING LOOT\n";
-        moveMouse(50, 590, 0, 3000, true);
-        screenPos = D3.screenPos(D3.findLoot());
-        moveMouse(screenPos.first, screenPos.second, 0, 1000, true);
-
-        cout << "=======================\n\n\tFINDING LOOT\n";
-        moveMouse(500, 600, 0, 3000, true);
-        screenPos = D3.screenPos(D3.findLoot());
-        moveMouse(screenPos.first, screenPos.second, 0, 1000, true);
-        moveMouse(750, 870, 1, 3000);
-
-        // Hallway
-        moveMouse(240, 710, 0, 4000, true);
-        cout << "=======================\n\n\tFINDING LOOT\n";
-        screenPos = D3.screenPos(D3.findLoot());
-        moveMouse(screenPos.first, screenPos.second, 0, 1000, true);
-
-        cout << "=======================\n\n\tFINDING LOOT\n";
-        moveMouse(530, 635, 0, 3000, true);
-        screenPos = D3.screenPos(D3.findLoot());
-        moveMouse(screenPos.first, screenPos.second, 0, 1000, true);
-
-        moveMouse(700, 700, 0, 3000, true);
-
-        cout << "=======================\n\n\tFINDING LOOT\n";
-        moveMouse(850, 400, 0, 2800, true);
-        screenPos = D3.screenPos(D3.findLoot());
-        moveMouse(screenPos.first, screenPos.second, 0, 1000, true);
-
-        moveMouse(0, 470, 1, 3000);
-
-        cout << "=======================\n\n\tFINDING LOOT\n";
-        moveMouse(940, 400, 0, 3000, true);
-        screenPos = D3.screenPos(D3.findLoot());
-        moveMouse(screenPos.first, screenPos.second, 0, 1000, true);
+        D3.getLoot();
 
         moveMouse(600, 400, 0, 2000, true);
-        moveMouse(600, 400, 1, 3000);
+        moveMouse(600, 400, 1, 2500);
         moveMouse(970, 0, 1, 2000);
         moveMouse(870, 200, 0, 2000, true);
         moveMouse(600, 200, 1, 5600);
@@ -379,45 +524,15 @@ int main() {
         moveMouse(1600, 0, 1, 4000);
 
         cout << "=======================\n\n\tFINDING LOOT\n";
-        moveMouse(1100, 80, 0, 4000, true);
-        screenPos = D3.screenPos(D3.findLoot());
-        moveMouse(screenPos.first, screenPos.second, 0, 1000, true);
-
-        moveMouse(1600, 950, 1, 3000);
-
-        cout << "=======================\n\n\tFINDING LOOT\n";
-        moveMouse(1100, 330, 0, 4000, true);
-        screenPos = D3.screenPos(D3.findLoot());
-        moveMouse(screenPos.first, screenPos.second, 0, 1000, true);
-
-        moveMouse(800, 0, 1, 3000);
-
-        cout << "=======================\n\n\tFINDING LOOT\n";
-        moveMouse(850, 380, 0, 3000, true);
-        screenPos = D3.screenPos(D3.findLoot());
-        moveMouse(screenPos.first, screenPos.second, 0, 1000, true);
-
-        cout << "=======================\n\n\tFINDING LOOT\n";
-        moveMouse(1170, 450, 0, 4000, true);
-        screenPos = D3.screenPos(D3.findLoot());
-        moveMouse(screenPos.first, screenPos.second, 0, 1000, true);
-
-        cout << "=======================\n\n\tFINDING LOOT\n";
-        moveMouse(1750, 900, 0, 4000, true);
-        screenPos = D3.screenPos(D3.findLoot());
-        moveMouse(screenPos.first, screenPos.second, 0, 1000, true);
-
-        cout << "=======================\n\n\tFINDING LOOT\n";
-        moveMouse(1260, 680, 0, 4000, true);
-        screenPos = D3.screenPos(D3.findLoot());
-        moveMouse(screenPos.first, screenPos.second, 0, 1000, true);
+        D3.getLoot();
 
         // Quiting session
         leaveGame();
+        Sleep(12000);
+        D3.chests.clear();
         loop++;
     }
 
-    CloseHandle(D3.proc);
     return 0;
 }
 
@@ -427,13 +542,12 @@ void leaveGame(){
     Mat templ = imread("Assets/EndGame.bmp");
     cout << "=======================\n\nLeaving Game:\n";
     while(templateMatching(screenBitmap(0, 0, 1920, 1080), templ, true) > 1000000);
-    return;
 }
 
-KeyPoint featureMatching(Mat templ){
+pair<float, float> featureMatching(const Mat &templ){
     vector<DMatch> good_matches;
     vector<KeyPoint> keypoints_1, keypoints_2;
-    KeyPoint loc;
+    pair<float, float> loc;
     Mat img2;
     double maxDist = 0, minDist = 100;
 
@@ -491,18 +605,18 @@ KeyPoint featureMatching(Mat templ){
     sort(locY.begin(), locY.end());
 
     if (locX.size() % 2 == 0)
-        loc.pt.x = (locX[locX.size()/2] + locX[locX.size()/2 + 1])/2;
+        loc.first = (locX[locX.size()/2] + locX[locX.size()/2 + 1])/2;
     else
-        loc.pt.x = locX[ceil(locX.size()/2)];
+        loc.first = locX[ceil(locX.size()/2)];
 
     if (locY.size() % 2 == 0)
-        loc.pt.y = (locY[locY.size()/2] + locY[locY.size()/2 + 1])/2;
+        loc.second = (locY[locY.size()/2] + locY[locY.size()/2 + 1])/2;
     else
-        loc.pt.y = locY[int (locY.size()/2)];
+        loc.second = locY[int (locY.size()/2)];
 
 
     imwrite("Assets/test/featureMatching.jpg", img_matches);
-    cout << "Found at: " << loc.pt.x << " " << loc.pt.y << endl;
+    cout << "Found at: " << loc.first << " " << loc.second << endl;
 
     return loc;
 }
@@ -518,7 +632,6 @@ void button(WORD key){
     input.ki.dwFlags = KEYEVENTF_KEYUP;
     Sleep(100);
     SendInput(1, &input, sizeof(INPUT));
-    return;
 }
 
 void moveMouse(int x, int y, int button, DWORD sleep, bool move){
@@ -548,14 +661,13 @@ void moveMouse(int x, int y, int button, DWORD sleep, bool move){
         Sleep(sleep);
     }
 
-    return;
 }
 
 Mat screenBitmap(int x, int y, int w, int h){
     Mat src;
     BITMAPINFOHEADER  bi;
 
-    HDC hdcScreen = GetDC(NULL);
+    HDC hdcScreen = GetDC(nullptr);
     HDC hdcMemory = CreateCompatibleDC(hdcScreen);
     src.create(h, w, CV_8UC4);
 
@@ -572,7 +684,7 @@ Mat screenBitmap(int x, int y, int w, int h){
     bi.biClrUsed = 0;
     bi.biClrImportant = 0;
 
-    HBITMAP hBitmapOld = (HBITMAP)SelectObject(hdcMemory, hBitmap);
+    auto hBitmapOld = (HBITMAP)SelectObject(hdcMemory, hBitmap);
 
     BitBlt(hdcMemory, 0, 0, w, h, hdcScreen, x, y, SRCCOPY);
     hBitmap = (HBITMAP)SelectObject(hdcMemory, hBitmapOld);
