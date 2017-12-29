@@ -10,10 +10,10 @@ alt="IMAGE ALT TEXT HERE" width="240" height="180" border="10" /></a>
 
 (For reference here is the previouse video: <https://youtu.be/YejSuaRm38c>)
 
-The next step for White Runner is improving the navigation between objectives, ideally this would be through nav meshes built from the in-game meshes. I also want to re program the template function as the number of parameters is getting out of hand. As the bot is now using memory reading I would like to emphasizes the [disclaimer](https://github.com/Per-Plex/WhiteRunner#disclaimer) at the bottom of this README.
+The next step for White Runner is improving the navigation between objectives, ideally this would be through nav meshes built from the in-game meshes. I also want to redo the template function as the number of parameters is getting out of hand. As the bot is now using memory reading I would like to emphasizes the [disclaimer](https://github.com/Per-Plex/WhiteRunner#disclaimer) at the bottom of this README.
 
 # Usage
-The bot works with the most recent verision of Diablo 3 x64 process. To run it you must have The Templars Quest available and have the templar as your follower. Once you have verified the prerequisites mentioned exit into the mode selection lobby and run the main.cpp file. It should handle everything from there.
+The bot works with the most recent verision of Diablo 3 x64 game. To run it you must have The Templars Quest available and have the templar as your follower. Once you have verified the prerequisites mentioned exit into the mode selection lobby and run the main.cpp file. It should handle everything from there.
 
 # Disclaimer
 This code is not intended for distribution or usage during season for Diablo 3. This code is to be for **educational purposes only**. I have not and will not use it for advantageous reasons against other players in Diablo 3.
