@@ -1,5 +1,7 @@
 # WhiteRunner
-White Runner is a bot that collects grey/white items from the templar side story quest. It then salvages these grey items giving the player grey materials for use in crafting, enchanting, or upgrading items. White Runner makes use of image processing and memory reading. The image processing is for simple tasks such as clicking on action buttons like the "leave game" and "ok" button presented during its runtime. While the memory reading is for more complex tasks such as finding chests that contain loot and the loot once its on the ground.
+White Runner is a bot that collects grey/white items from the templar side story quest. It then salvages these grey items giving the player grey materials for use in crafting, enchanting, or upgrading items. White Runners intended use is to gather white materials and use Kanai's Cube to convert white materials to blue and yellow materials. We then can use Kanai's Cube again to upgrade a rare item into a legendary item with blue, yellow, and white materials. This saves the player time of having grind endlessly for the legendary item or for materials to do the upgrade.
+
+White Runner makes use of image processing and memory reading. The image processing is for simple tasks such as clicking on action buttons like the "leave game" and "ok" button presented during its loops through the game. While the memory reading is for more complex tasks such as finding chests, looting, and verifying states of looted chests.
 
 # Status (28/12/2017): In-Progress
 White Runner is now split up into individual files for better flow and testing of bot functunality.
